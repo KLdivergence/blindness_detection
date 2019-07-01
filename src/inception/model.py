@@ -3,7 +3,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import categorical_crossentropy
 
 
-def model(lr=0.001):
+def create_model(lr=0.001):
     """Create compiled keras model
 
     Parameters:
