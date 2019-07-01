@@ -46,7 +46,5 @@ def load_labels(csv_file):
     return label_dict
 
 
-def create_val()
-
 if __name__ == "__main__":
     group_images("../../data/train_images", "../../data/train.csv")
