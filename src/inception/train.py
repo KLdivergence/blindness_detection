@@ -1,5 +1,8 @@
+import os
+import pickle as pk
+
 import tensorflow as tf
-from tensorflow.keras.backend.tensorflow_backend import set_session
+from tensorflow.keras.backend import set_session
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import pandas as pd
 
@@ -11,6 +14,7 @@ config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 set_session(sess)
 
+### Training stage
 traingen = ImageDataGenerator(rescale=1./255,
                               shear_range=0.2,
                               zoom_range=0.2,
@@ -26,7 +30,6 @@ train_df = pd.read_csv("../../data/train.csv")
 cols = train_df.columns
 # add extensions to filenames
 train_df[cols[0]] = train_df[cols[0]].apply("{}.png".format)
-print(train_df.head())
 
 train_generator = traingen.flow_from_dataframe(
         train_df,
@@ -57,3 +60,24 @@ model.fit_generator(
         epochs=50,
         validation_data=val_generator,
         validation_steps=STEP_SIZE_VAL)
+
+### Testing stage
+testgen = ImageDataGenerator(rescale=1./255)
+test_generator = testgen.flow_from_directory(
+        "../../data/test_images",
+        target_size=(299, 299),
+        shuffle = False,
+        class_mode='categorical',
+        batch_size=1)
+
+filenames = test_generator.filenames
+nb_samples = len(filenames)
+
+predict = model.predict_generator(test_generator, steps = nb_samples)
+predict = dict(zip(filenames, predict))
+
+### Save predicted data
+save_path = "../../results/inception"
+os.makedirs(save_path, exist_ok=True)
+with open(os.path.join(save_path, "predict.pk"), "wb") as f:
+    pk.dump(predict, f)
