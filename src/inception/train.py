@@ -76,8 +76,17 @@ nb_samples = len(filenames)
 predict = model.predict_generator(test_generator, steps = nb_samples)
 predict = dict(zip(filenames, predict))
 
-### Save predicted data
+### Save prediction data
 save_path = "../../results/inception"
 os.makedirs(save_path, exist_ok=True)
 with open(os.path.join(save_path, "predict.pk"), "wb") as f:
     pk.dump(predict, f)
+
+### Save predictions to csv
+test_csv = "../../data/sample_submission.csv"
+test_df = pd.read_csv(test_csv)
+def get_predict(id):
+    return np.argmax(predict[r"0\\"+id+r".png"])
+test_df["diagnosis"] = test_df["id_code"].map(
+    lambda id: np.argmax(predict[r"0\\"+str(id)+r".png"]))
+test_df.to_csv("../../results/submit.csv", index=False)
